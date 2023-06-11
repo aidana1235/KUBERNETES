@@ -1,0 +1,26 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: Alertmanager
+metadata:
+  name: alertmanager-config
+  namespace: aidana
+spec:
+  route:
+    receiver: "email-notifications"
+    repeatInterval: 30m
+    routes:
+      - match:
+          alertname: HighCPULoad
+      - match:
+          alertname: PodCrashLooping
+          repeatInterval: 10m
+  receivers:
+    - name: "email-notifications"
+      email_configs:
+        - to: "aidanaalymbekova2@gmail.com"
+          from: "aidanaalymbekova2@gmail.com"
+          smarthost: "smtp.gmail.com:587"
+          auth_username: "aidanaalymbekova2@gmail.com"
+          auth_identity: "aidanaalymbekova2@gmail.com"
+          auth_password:
+            name: gmail-auth
+            key: password

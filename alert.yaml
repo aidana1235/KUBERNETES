@@ -1,0 +1,31 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: main-rules
+  namespace: aidana
+  labels:
+    app: kube-prometheus-stack
+    release: aidana
+spec:
+  groups:
+    - name: main.rules
+      rules:
+        - alert: HighCPULoad
+          expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[2m]))*100) > 10
+          for: 2m
+          labels:
+            severity: warning
+            namespace: aidana
+          annotations:
+            description: "CPU Load on host is over 50%\n Value = {{ $value}}\n Instance = {{ $labels.instance }}"
+            summary: High CPU Load
+        - alert: PodCrashLooping
+          expr: kube_pod_container_status_restarts_total > 2
+          for: 0m
+          labels:
+            severity: critical
+            namespace: aidana
+          annotations:
+            description: "Pod {{ $labels.pod}} is crash looping\n Value = {{ $value}}"
+            summary: K8S pod crash looping
+            receiver: email-notifications
